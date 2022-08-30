@@ -9,14 +9,24 @@ class ImportSymbolsHandler(ida_kernwin.action_handler_t):
         ida_kernwin.action_handler_t.__init__(self)
 
     def activate(self, context):
-        if path := ida_kernwin.ask_file(False, "*.csv", "Import Symport CSV") is None:
+        if (path := ida_kernwin.ask_file(False, "*.csv", "Import Symport CSV")) is None:
             return
+
+        print(f"Symport: Loading symbols from {path}")
 
         symbol_list = SymbolList()
         symbol_list.load_csv(path)
 
         for address in symbol_list:
-            ida_name.set_name(address, symbol_list[address])
+            name = symbol_list[address]
+
+            if ida_name.get_name(address) != "":
+                print(f"Symport: Symbol already present at {hex(address)}, skipping")
+                continue
+            else:
+                print(f"Symport: Added symbol '{name}' at {hex(address)}")
+
+            ida_name.set_name(address, name)
 
         return 1
 
@@ -25,7 +35,11 @@ class ImportSymbolsHandler(ida_kernwin.action_handler_t):
 
 
 import_symbols_action = ida_kernwin.action_desc_t(
-    "symport:import_symbols", "Symport CSV file...", ImportSymbolsHandler()
+    "symport:import_symbols",
+    "Symport CSV file...",
+    ImportSymbolsHandler(),
+    None,
+    "Import symbols from a Symport CSV file",
 )
 
 ida_kernwin.register_action(import_symbols_action)
@@ -49,7 +63,11 @@ class ExportSymbolsHandler(ida_kernwin.action_handler_t):
 
 
 export_symbols_action = ida_kernwin.action_desc_t(
-    "symport:export_symbols", "Symport CSV file...", ExportSymbolsHandler()
+    "symport:export_symbols",
+    "Symport CSV file...",
+    ExportSymbolsHandler(),
+    None,
+    "Export symbols to a Symport CSV file",
 )
 
 ida_kernwin.register_action(export_symbols_action)

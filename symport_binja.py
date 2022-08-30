@@ -2,12 +2,15 @@ from symport.symbol_list import SymbolList
 
 from binaryninja import (
     BinaryView,
+    Logger,
     PluginCommand,
     Symbol,
     SymbolType,
     get_open_filename_input as get_open_path,
     get_save_filename_input as get_save_path,
 )
+
+logger = Logger(0, "Symport")
 
 
 def export_symbols(bv: BinaryView):
@@ -27,15 +30,24 @@ def import_symbols(bv: BinaryView):
     if (path := get_open_path("Import Symport CSV", "*.csv")) is None:
         return
 
+    logger.log_info(f"Loading symbols from {path}")
+
     symbol_list = SymbolList()
     symbol_list.load_csv(path)
 
     for address in symbol_list:
-        func = bv.get_function_at(address)
-        if func is None:
+        name = symbol_list[address]
+
+        if (func := bv.get_function_at(address)) is None:
             symbol_type = SymbolType.DataSymbol
         else:
             symbol_type = SymbolType.FunctionSymbol
+
+        if bv.get_symbol_at(address) != None:
+            logger.log_warn(f"Symbol already present at {hex(address)}, skipping")
+            continue
+        else:
+            logger.log_info(f"Added symbol '{name}' at {hex(address)}")
 
         symbol = Symbol(symbol_type, address, symbol_list[address])
         bv.define_user_symbol(symbol)
