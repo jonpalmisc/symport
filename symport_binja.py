@@ -43,9 +43,25 @@ def import_symbols(bv: BinaryView):
         else:
             symbol_type = SymbolType.FunctionSymbol
 
-        if bv.get_symbol_at(address) != None:
-            logger.log_warn(f"Symbol already present at {hex(address)}, skipping")
+        current_symbol = bv.get_symbol_at(address)
+        if current_symbol != None:
+            current_name = current_symbol.short_name
+        else:
+            current_name = None
+
+        # Check for conflicting symbols
+        if current_name != None and current_name != name:
+            logger.log_warn(
+                f"Skipped symbol conflict at {hex(address)} (have '{current_name}', expected '{name}')"
+            )
             continue
+
+        # Check for duplicate symbols
+        elif current_name == name:
+            logger.log_info(f"Skipped duplicate symbol '{name}' at {hex(address)}")
+            continue
+
+        # Define missing symbol
         else:
             logger.log_info(f"Added symbol '{name}' at {hex(address)}")
 

@@ -4,6 +4,10 @@ import ida_kernwin
 import ida_name
 
 
+def log(message: str) -> None:
+    print(f"Symport: {message}")
+
+
 class ImportSymbolsHandler(ida_kernwin.action_handler_t):
     def __init__(self) -> None:
         ida_kernwin.action_handler_t.__init__(self)
@@ -12,7 +16,7 @@ class ImportSymbolsHandler(ida_kernwin.action_handler_t):
         if (path := ida_kernwin.ask_file(False, "*.csv", "Import Symport CSV")) is None:
             return
 
-        print(f"Symport: Loading symbols from {path}")
+        log(f"Loading symbols from {path}")
 
         symbol_list = SymbolList()
         symbol_list.load_csv(path)
@@ -20,11 +24,22 @@ class ImportSymbolsHandler(ida_kernwin.action_handler_t):
         for address in symbol_list:
             name = symbol_list[address]
 
-            if ida_name.get_name(address) != "":
-                print(f"Symport: Symbol already present at {hex(address)}, skipping")
+            # Check for conflicting symbols
+            current_name = ida_name.get_name(address)
+            if current_name != "" and current_name != name:
+                log(
+                    f"Skipped symbol conflict at {hex(address)} (have '{current_name}', expected '{name}')"
+                )
                 continue
+
+            # Check for duplicate symbols
+            elif current_name == name:
+                log(f"Skipped duplicate symbol '{name}' at {hex(address)}")
+                continue
+
+            # Define missing symbol
             else:
-                print(f"Symport: Added symbol '{name}' at {hex(address)}")
+                log(f"Added symbol '{name}' at {hex(address)}")
 
             ida_name.set_name(address, name)
 
