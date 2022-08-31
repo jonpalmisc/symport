@@ -91,7 +91,21 @@ class ExportSymbolsHandler(ida_kernwin.action_handler_t):
         ida_kernwin.action_handler_t.__init__(self)
 
     def activate(self, context):
-        ida_kernwin.warning("Exporting symbols is not yet supported.")
+        if (path := ida_kernwin.ask_file(True, "*.csv", "Export Symport CSV")) is None:
+            return
+
+        symbol_list = SymbolList()
+        for i in range(ida_name.get_nlist_size()):
+            ea = ida_name.get_nlist_ea(i)
+            name = ida_name.get_nlist_name(i)
+
+            if should_ignore_name(name):
+                log(f"Skipping auto-generated name '{name}'")
+                continue
+
+            symbol_list.insert(ea, name)
+
+        symbol_list.save_csv(path)
         return 1
 
     def update(self, context):
