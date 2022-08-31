@@ -69,5 +69,5 @@ def import_symbols(bv: BinaryView):
         bv.define_user_symbol(symbol)
 
 
-PluginCommand.register("Symport\\Import Symbols from File", "", import_symbols)
-PluginCommand.register("Symport\\Export Symbols to File", "", export_symbols)
+PluginCommand.register("Symport\\Import Symbols from File...", "", import_symbols)
+PluginCommand.register("Symport\\Export Symbols to File...", "", export_symbols)

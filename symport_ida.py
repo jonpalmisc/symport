@@ -72,7 +72,7 @@ class ImportSymbolsHandler(ida_kernwin.action_handler_t):
 
 import_symbols_action = ida_kernwin.action_desc_t(
     "symport:import_symbols",
-    "Symport CSV file...",
+    "Import Symport CSV file...",
     ImportSymbolsHandler(),
     None,
     "Import symbols from a Symport CSV file",
@@ -114,7 +114,7 @@ class ExportSymbolsHandler(ida_kernwin.action_handler_t):
 
 export_symbols_action = ida_kernwin.action_desc_t(
     "symport:export_symbols",
-    "Symport CSV file...",
+    "Export Symport CSV file...",
     ExportSymbolsHandler(),
     None,
     "Export symbols to a Symport CSV file",
